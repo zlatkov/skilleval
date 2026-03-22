@@ -2,16 +2,16 @@
 
 Evaluate how well AI models understand and respond to [Agent Skills](https://agentskills.io/home) (SKILL.md files).
 
-Skill authors write a SKILL.md and have zero idea whether it works on any model besides the one they tested with. `skilleval` fixes that — it simulates how agents like Claude Code inject skills into prompts, then tests whether various LLM models correctly trigger and follow the skill's instructions.
+Skill authors write a SKILL.md and have zero idea whether it works on any model besides the one they tested with. `skilleval` fixes that  - it simulates how agents like [OpenClaw](https://openclaw.ai/) and Claude Code inject skills into prompts, following the [OpenSkills](https://github.com/numman-ali/openskills) specification, then tests whether various LLM models correctly trigger and follow the skill's instructions.
 
 ## Prerequisites
 
 You need an [OpenRouter](https://openrouter.ai) account. Create a free API key at [openrouter.ai/keys](https://openrouter.ai/keys).
 
-OpenRouter is used for test prompt generation and evaluation judging (using free models), and as the default provider for testing models. Even if you use a different provider (Anthropic, OpenAI, Google) for the models being tested, an OpenRouter key is still required for the generator and judge unless you supply custom prompts via `--prompts`.
+OpenRouter is used for test prompt generation and evaluation judging, and as the default provider for testing models. Even if you use a different provider (Anthropic, OpenAI, Google) for the models being tested, an OpenRouter key is still required for the generator and judge unless you supply custom prompts via `--prompts`.
 
 **Free model limitations:** OpenRouter's free models (those ending in `:free`) are subject to upstream rate limits and may be temporarily unavailable. If you encounter rate limit errors, you can:
-- Wait and retry — free model availability fluctuates
+- Wait and retry  - free model availability fluctuates
 - Use paid models instead (remove the `:free` suffix, e.g. `meta-llama/llama-3.3-70b-instruct`)
 - Provide your own test prompts with `--prompts` to skip the generator model entirely
 
@@ -36,14 +36,14 @@ npx skilleval https://github.com/user/repo/blob/main/skills/my-skill/SKILL.md
 
 ## How It Works
 
-`skilleval` follows the [OpenSkills](https://github.com/numman-ali/openskills) specification — a universal skills format based on Anthropic's SKILL.md system. It's compatible with skills built for agents like Claude Code, [OpenClaw](https://openclaw.ai/), and any agent that uses the SKILL.md format. It simulates how these agents inject skills into system prompts using `<available_skills>` XML blocks — the same format used in production. This means the evaluation reflects real-world skill behavior, not synthetic benchmarks.
+`skilleval` follows the [OpenSkills](https://github.com/numman-ali/openskills) specification  - a universal skills format based on Anthropic's SKILL.md system. It's compatible with skills built for agents like Claude Code, [OpenClaw](https://openclaw.ai/), and any agent that uses the SKILL.md format. It simulates how these agents inject skills into system prompts using `<available_skills>` XML blocks  - the same format used in production. This means the evaluation reflects real-world skill behavior, not synthetic benchmarks.
 
-1. **Parse** — Reads the SKILL.md, extracts name, description, and instructions.
-2. **Build context** — The model is presented as a helpful AI agent with access to multiple skills. The system prompt uses `<available_skills>` XML injection where your skill is mixed in with 3 fake distractor skills (e.g. "git-commit-helper", "api-documentation", "test-generator"). This tests whether the model can identify the right skill from a realistic list rather than in isolation.
-3. **Generate test prompts** — A generator model creates 5 positive prompts (should trigger) and 5 negative prompts (should not).
-4. **Run trigger tests** — Sends each prompt to each target model with the skill-injected system prompt.
-5. **Evaluate** — A judge model assesses trigger accuracy and, for correctly triggered prompts, runs a compliance test against the full skill instructions. If the skill references tools (e.g. `WebFetch`, `BraveSearch`, `Read`, `Write`, `Edit`, `Bash`, `Grep`, `Glob`), `skilleval` automatically provides mock tool definitions so the model can make real structured tool calls instead of fabricating results in text. The judge evaluates whether the model called the right tools with the right parameters, not the quality of the mock results.
-6. **Report** — Prints a compatibility matrix to the terminal.
+1. **Parse**  - Reads the SKILL.md, extracts name, description, and instructions.
+2. **Build context**  - The model is presented as a helpful AI agent with access to multiple skills. The system prompt uses `<available_skills>` XML injection where your skill is mixed in with 3 fake distractor skills (e.g. "git-commit-helper", "api-documentation", "test-generator"). This tests whether the model can identify the right skill from a realistic list rather than in isolation.
+3. **Generate test prompts**  - A generator model creates 5 positive prompts (should trigger) and 5 negative prompts (should not).
+4. **Run trigger tests**  - Sends each prompt to each target model with the skill-injected system prompt.
+5. **Evaluate**  - A judge model assesses trigger accuracy and, for correctly triggered prompts, runs a compliance test against the full skill instructions. If the skill references tools (e.g. `WebFetch`, `BraveSearch`, `Read`, `Write`, `Edit`, `Bash`, `Grep`, `Glob`), `skilleval` automatically provides mock tool definitions so the model can make real structured tool calls instead of fabricating results in text. The judge evaluates whether the model called the right tools with the right parameters, not the quality of the mock results.
+6. **Report**  - Prints a compatibility matrix to the terminal.
 
 See [AGENTS.md](./AGENTS.md) for detailed pipeline internals.
 
@@ -101,7 +101,7 @@ Options:
 |---|---|---|---|
 | **Test models** | `-m, --models` | 5 free OpenRouter models | The models being evaluated. These receive the skill-injected prompt and are scored on how well they trigger and follow the skill. |
 | **Generator models** | `--generator-model` | 3 free OpenRouter models (with fallback) | Generate test prompts (positive + negative) from the skill definition. Count configurable via `-n`. You can provide comma-separated model IDs for fallback. |
-| **Judge models** | `--judge-model` | 3 free OpenRouter models (with fallback) | Evaluate each test model's response — did it correctly trigger the skill? Did it follow instructions? You can provide comma-separated model IDs for fallback. |
+| **Judge models** | `--judge-model` | 3 free OpenRouter models (with fallback) | Evaluate each test model's response  - did it correctly trigger the skill? Did it follow instructions? You can provide comma-separated model IDs for fallback. |
 
 The generator and judge models always run through OpenRouter (even if you set a different `--provider`). Only the test models use your specified provider.
 
@@ -170,7 +170,7 @@ Each model is scored on two dimensions:
 - **Trigger accuracy** (50% of overall): Did the model correctly identify when to use the skill (positive prompts) and when to ignore it (negative prompts)?
 - **Compliance** (50% of overall): For positive prompts where the skill was triggered, did the model follow the skill's instructions? Split into pass/fail (30%) and quality score 0-100 (20%).
 
-Exit code is `0` if all models score >= 50%, `1` otherwise — useful for CI.
+Exit code is `0` if all models score >= 50%, `1` otherwise  - useful for CI.
 
 ## Development
 
