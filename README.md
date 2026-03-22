@@ -1,6 +1,6 @@
 # skilleval
 
-Evaluate how well AI models understand and respond to Agent Skills ([SKILL.md](https://skills.sh](https://agentskills.io/home) files).
+Evaluate how well AI models understand and respond to Agent Skills ([SKILL.md](https://skills.sh](https://agentskills.io/home)) files).
 
 Skill authors write a SKILL.md and have zero idea whether it works on any model besides the one they tested with. `skilleval` fixes that — it simulates how agents like Claude Code inject skills into prompts, then tests whether various LLM models correctly trigger and follow the skill's instructions.
 
