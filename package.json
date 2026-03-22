@@ -1,31 +1,7 @@
 {
-  "name": "skilleval",
+  "name": "@alexanderzzlatkov/skilleval",
   "version": "0.1.0",
   "description": "Evaluate how well AI models understand Agent Skills (SKILL.md files)",
-  "type": "module",
-  "bin": {
-    "skilleval": "./dist/index.js"
-  },
-  "main": "./dist/index.js",
-  "files": [
-    "dist"
-  ],
-  "scripts": {
-    "build": "tsc",
-    "dev": "tsx src/index.ts",
-    "prepublishOnly": "npm run build"
-  },
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/zlatkov/skilleval.git"
-  },
-  "bugs": {
-    "url": "https://github.com/zlatkov/skilleval/issues"
-  },
-  "homepage": "https://github.com/zlatkov/skilleval#readme",
-  "engines": {
-    "node": ">=18"
-  },
   "keywords": [
     "ai",
     "agent",
@@ -36,7 +12,31 @@
     "openrouter",
     "skilleval"
   ],
+  "homepage": "https://github.com/zlatkov/skilleval#readme",
+  "bugs": {
+    "url": "https://github.com/zlatkov/skilleval/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/zlatkov/skilleval.git"
+  },
   "license": "MIT",
+  "author": "Alexander Zlatkov (https://github.com/zlatkov)",
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "bin": {
+    "skilleval": "dist/index.js"
+  },
+  "files": [
+    "dist/**/*.js",
+    "dist/**/*.d.ts"
+  ],
+  "scripts": {
+    "build": "tsc",
+    "dev": "tsx src/index.ts",
+    "prepublishOnly": "npm run build"
+  },
   "dependencies": {
     "@ai-sdk/anthropic": "^1.0.0",
     "@ai-sdk/google": "^1.0.0",
@@ -51,5 +51,8 @@
     "@types/node": "^22.0.0",
     "tsx": "^4.0.0",
     "typescript": "^5.7.0"
+  },
+  "engines": {
+    "node": ">=18"
   }
 }

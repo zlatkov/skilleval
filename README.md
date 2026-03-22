@@ -15,6 +15,18 @@ OpenRouter is used for test prompt generation and evaluation judging, and as the
 - Use paid models instead (remove the `:free` suffix, e.g. `meta-llama/llama-3.3-70b-instruct`)
 - Provide your own test prompts with `--prompts` to skip the generator model entirely
 
+## Installation
+
+```bash
+npm install -g @alexanderzzlatkov/skilleval
+```
+
+Or use directly with `npx`:
+
+```bash
+npx @alexanderzzlatkov/skilleval ./my-skill/SKILL.md
+```
+
 ## Quick Start
 
 ```bash
@@ -22,7 +34,7 @@ OpenRouter is used for test prompt generation and evaluation judging, and as the
 export OPENROUTER_API_KEY=sk-or-...
 
 # Evaluate a local skill
-npx skilleval ./my-skill/SKILL.md
+npx @alexanderzzlatkov/skilleval ./my-skill/SKILL.md
 
 # Evaluate a skill from a GitHub repo (like skills.sh)
 npx skilleval owner/repo
