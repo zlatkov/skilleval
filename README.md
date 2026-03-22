@@ -154,6 +154,13 @@ npx skilleval ./SKILL.md -n 1
 
 # Detailed per-prompt breakdown
 npx skilleval ./SKILL.md --verbose
+
+# Full example: evaluate Vercel's most popular skill on skills.sh
+npx skilleval https://github.com/vercel-labs/skills --skill find-skills \
+  --models anthropic/claude-opus-4.6 \
+  --generator-model meta-llama/llama-3.3-70b-instruct:free \
+  --judge-model anthropic/claude-sonnet-4.6 \
+  -n 5 --verbose
 ```
 
 ### Custom Test Prompts
