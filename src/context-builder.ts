@@ -85,18 +85,21 @@ function buildSkillXml(name: string, description: string, location?: string): st
 </skill>`;
 }
 
-export function buildTriggerSystemPrompt(skill: SkillDefinition): string {
-  const allSkills = [
-    buildSkillXml(DUMMY_SKILLS[0].name, DUMMY_SKILLS[0].description),
-    buildSkillXml(DUMMY_SKILLS[1].name, DUMMY_SKILLS[1].description),
+export function buildTriggerSystemPrompt(skill: SkillDefinition, allSkills: SkillDefinition[] = []): string {
+  const others = allSkills.filter(s => s.name !== skill.name);
+  // Supplement with dummy skills if we don't have enough real skills as distractors
+  const neededDummies = Math.max(0, 3 - others.length);
+
+  const skillXmls = [
+    ...DUMMY_SKILLS.slice(0, neededDummies).map(d => buildSkillXml(d.name, d.description)),
+    ...others.map(s => buildSkillXml(s.name, s.description)),
     buildSkillXml(skill.name, skill.description),
-    buildSkillXml(DUMMY_SKILLS[2].name, DUMMY_SKILLS[2].description),
   ];
 
   return `${BASE_SYSTEM_PROMPT}
 
 <available_skills>
-${allSkills.join('\n')}
+${skillXmls.join('\n')}
 </available_skills>`;
 }
 
@@ -114,11 +117,16 @@ export function buildMockTools(): Record<string, CoreTool> {
   return tools;
 }
 
-export function buildComplianceSystemPrompt(skill: SkillDefinition): string {
+export function buildComplianceSystemPrompt(skill: SkillDefinition, allSkills: SkillDefinition[] = []): string {
+  const others = allSkills.filter(s => s.name !== skill.name);
+  const otherSkillsXml = others.map(s =>
+    `<skill>\n  <name>${s.name}</name>\n  <description>${s.description}</description>\n</skill>`,
+  ).join('\n');
+
   return `${BASE_SYSTEM_PROMPT}
 
 <available_skills>
-<skill>
+${otherSkillsXml ? otherSkillsXml + '\n' : ''}<skill>
   <name>${skill.name}</name>
   <description>${skill.description}</description>
   <instructions>

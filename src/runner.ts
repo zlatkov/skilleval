@@ -7,8 +7,9 @@ export async function runTests(
   prompts: TestPrompt[],
   models: ModelWithId[],
   verbose: boolean,
+  allSkills: SkillDefinition[] = [],
 ): Promise<TestResult[]> {
-  const systemPrompt = buildTriggerSystemPrompt(skill);
+  const systemPrompt = buildTriggerSystemPrompt(skill, allSkills);
   const results: TestResult[] = [];
   const totalTests = models.length * prompts.length;
   let completed = 0;

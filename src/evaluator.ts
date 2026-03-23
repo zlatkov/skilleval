@@ -135,6 +135,7 @@ export async function evaluateResults(
   judgeModels: LanguageModel[],
   models: ModelWithId[],
   verbose: boolean,
+  allSkills: SkillDefinition[] = [],
 ): Promise<EvalResult[]> {
   const evalResults: EvalResult[] = [];
   const total = testResults.length;
@@ -142,7 +143,7 @@ export async function evaluateResults(
 
   const mockTools = buildMockTools();
   const toolNames = Object.keys(mockTools);
-  const complianceSystemPrompt = buildComplianceSystemPrompt(skill);
+  const complianceSystemPrompt = buildComplianceSystemPrompt(skill, allSkills);
 
   if (verbose) {
     process.stderr.write(`\n  Compliance system prompt:\n  ---\n${complianceSystemPrompt}\n  ---\n`);

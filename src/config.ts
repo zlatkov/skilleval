@@ -109,3 +109,11 @@ export interface ModelWithId {
   model: LanguageModel;
   modelId: string;
 }
+
+// --- Multi-skill evaluation summary ---
+
+export interface SkillEvalSummary {
+  skill: SkillDefinition;
+  reports: EvalReport[];
+  evalResults: EvalResult[];
+}
