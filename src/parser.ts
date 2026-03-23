@@ -1,5 +1,5 @@
-import { readFile } from 'node:fs/promises';
-import { basename } from 'node:path';
+import { readFile, readdir, stat } from 'node:fs/promises';
+import { basename, join } from 'node:path';
 import matter from 'gray-matter';
 import type { SkillDefinition } from './config.js';
 
@@ -133,6 +133,48 @@ async function resolveSource(source: string, skillName?: string): Promise<{ cont
   // Case 5: Local file path
   const content = await readFile(source, 'utf-8');
   return { content, sourceName: basename(source, '.md') };
+}
+
+async function findSkillFilesInDir(dir: string): Promise<string[]> {
+  const results: string[] = [];
+  const entries = await readdir(dir, { withFileTypes: true });
+  for (const entry of entries) {
+    const fullPath = join(dir, entry.name);
+    if (entry.isDirectory()) {
+      results.push(...await findSkillFilesInDir(fullPath));
+    } else if (entry.isFile() && entry.name === 'SKILL.md') {
+      results.push(fullPath);
+    }
+  }
+  return results.sort();
+}
+
+/**
+ * Expands a source to one or more file/URL paths.
+ * If the source is a local directory, returns paths to all SKILL.md files found recursively.
+ * Otherwise returns the source unchanged (single file, URL, or GitHub shorthand).
+ */
+export async function resolveSkillSources(source: string): Promise<string[]> {
+  // Only attempt directory expansion for local paths (not URLs or GitHub shorthands)
+  if (source.startsWith('http://') || source.startsWith('https://') || GITHUB_SHORTHAND_RE.test(source)) {
+    return [source];
+  }
+  try {
+    const s = await stat(source);
+    if (s.isDirectory()) {
+      const files = await findSkillFilesInDir(source);
+      if (files.length === 0) {
+        throw new Error(`No SKILL.md files found in directory: ${source}`);
+      }
+      return files;
+    }
+  } catch (err) {
+    // Not a directory (or stat failed because it's not a local path) — fall through
+    if ((err as NodeJS.ErrnoException).code !== 'ENOENT' && (err as Error).message.startsWith('No SKILL.md')) {
+      throw err;
+    }
+  }
+  return [source];
 }
 
 export async function parseSkill(source: string, skillName?: string): Promise<SkillDefinition> {

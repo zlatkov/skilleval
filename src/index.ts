@@ -3,7 +3,7 @@
 import 'dotenv/config';
 import { Command } from 'commander';
 import chalk from 'chalk';
-import { parseSkill } from './parser.js';
+import { parseSkill, resolveSkillSources } from './parser.js';
 import { createModel, resolveApiKey } from './providers.js';
 import { generateTestPrompts } from './test-generator.js';
 import { runTests } from './runner.js';
@@ -83,10 +83,15 @@ program
         internalApiKey = '';
       }
 
+      // Expand any directory sources to individual SKILL.md paths
+      const expandedSources = (await Promise.all(skillSources.map(resolveSkillSources))).flat();
+      // Deduplicate while preserving order
+      const uniqueSources = [...new Set(expandedSources)];
+
       // Parse all skills
       process.stderr.write(chalk.cyan('Parsing skills...\n'));
       const skills = await Promise.all(
-        skillSources.map(src => parseSkill(src, skillSources.length === 1 ? opts.skill : undefined)),
+        uniqueSources.map(src => parseSkill(src, uniqueSources.length === 1 ? opts.skill : undefined)),
       );
 
       if (!opts.json) {
