@@ -85,6 +85,20 @@ function buildSkillXml(name: string, description: string, location?: string): st
 </skill>`;
 }
 
+/**
+ * Finds skills from allSkills that are explicitly referenced in skill's body.
+ * Matches on skill name as a whole word (hyphens treated as optional whitespace).
+ */
+export function detectCrossReferences(skill: SkillDefinition, allSkills: SkillDefinition[]): SkillDefinition[] {
+  const body = skill.body.toLowerCase();
+  return allSkills.filter(other => {
+    if (other.name === skill.name) return false;
+    const escapedName = other.name.toLowerCase().replace(/[-]/g, '[\\s\\-]');
+    const nameRegex = new RegExp(`\\b${escapedName}\\b`);
+    return nameRegex.test(body) || body.includes(`skills/${other.name.toLowerCase()}/`);
+  });
+}
+
 export function buildTriggerSystemPrompt(skill: SkillDefinition, allSkills: SkillDefinition[] = []): string {
   const others = allSkills.filter(s => s.name !== skill.name);
   // Supplement with dummy skills if we don't have enough real skills as distractors
@@ -119,9 +133,15 @@ export function buildMockTools(): Record<string, CoreTool> {
 
 export function buildComplianceSystemPrompt(skill: SkillDefinition, allSkills: SkillDefinition[] = []): string {
   const others = allSkills.filter(s => s.name !== skill.name);
-  const otherSkillsXml = others.map(s =>
-    `<skill>\n  <name>${s.name}</name>\n  <description>${s.description}</description>\n</skill>`,
-  ).join('\n');
+  const crossRefNames = new Set(detectCrossReferences(skill, allSkills).map(s => s.name));
+
+  // Cross-referenced skills get full instructions so the model can follow through on them
+  const otherSkillsXml = others.map(s => {
+    if (crossRefNames.has(s.name)) {
+      return `<skill>\n  <name>${s.name}</name>\n  <description>${s.description}</description>\n  <instructions>\n${s.body}\n  </instructions>\n</skill>`;
+    }
+    return `<skill>\n  <name>${s.name}</name>\n  <description>${s.description}</description>\n</skill>`;
+  }).join('\n');
 
   return `${BASE_SYSTEM_PROMPT}
 

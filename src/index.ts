@@ -4,6 +4,7 @@ import 'dotenv/config';
 import { Command } from 'commander';
 import chalk from 'chalk';
 import { parseSkill, resolveSkillSources } from './parser.js';
+import { detectCrossReferences } from './context-builder.js';
 import { createModel, resolveApiKey } from './providers.js';
 import { generateTestPrompts } from './test-generator.js';
 import { runTests } from './runner.js';
@@ -101,6 +102,13 @@ program
           console.log(`${chalk.bold('Description:')} ${skills[0].description}`);
         } else {
           console.log(`${chalk.bold('Skills:')} ${skills.map(s => s.name).join(', ')}`);
+          // Show detected cross-references between evaluated skills
+          for (const skill of skills) {
+            const refs = detectCrossReferences(skill, skills);
+            if (refs.length > 0) {
+              console.log(`${chalk.dim(`  ${skill.name} → ${refs.map(r => r.name).join(', ')}`)}`);
+            }
+          }
         }
         console.log(`${chalk.bold('Provider:')} ${provider}`);
         console.log(`${chalk.bold('Models:')} ${modelIds.length}\n`);

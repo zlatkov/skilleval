@@ -1,5 +1,5 @@
 import { generateText, type LanguageModel } from 'ai';
-import { buildComplianceSystemPrompt, buildMockTools } from './context-builder.js';
+import { buildComplianceSystemPrompt, buildMockTools, detectCrossReferences } from './context-builder.js';
 import type {
   ComplianceEval,
   EvalReport,
@@ -106,9 +106,18 @@ function complianceJudgePrompt(
   skill: SkillDefinition,
   promptText: string,
   response: string,
+  crossRefs: SkillDefinition[] = [],
 ): string {
+  const crossRefSection = crossRefs.length > 0
+    ? `\n\n## Cross-skill References\nThis skill references the following skills: ${crossRefs.map(s => s.name).join(', ')}\nIf the workflow required invoking them, check whether the model correctly transitioned to and followed their instructions.`
+    : '';
+
+  const crossRefEvalItem = crossRefs.length > 0
+    ? '\n5. If cross-skill references were required, did the model correctly invoke and follow them?'
+    : '';
+
   return `## Skill Instructions
-${skill.body}
+${skill.body}${crossRefSection}
 
 ## User Prompt
 "${promptText}"
@@ -121,7 +130,7 @@ Did the model correctly follow the skill's instructions? Evaluate:
 1. Did it call the correct tools as described in the skill?
 2. Did it pass reasonable arguments to those tools?
 3. Did it follow the stated workflow/steps in the right order?
-4. Did it stay within the scope of the skill?
+4. Did it stay within the scope of the skill?${crossRefEvalItem}
 
 Note: Tools returned mock results. Do not penalize for the quality of returned data — focus on whether the model called the right tools with the right parameters.
 
@@ -144,11 +153,15 @@ export async function evaluateResults(
   const mockTools = buildMockTools();
   const toolNames = Object.keys(mockTools);
   const complianceSystemPrompt = buildComplianceSystemPrompt(skill, allSkills);
+  const crossRefs = detectCrossReferences(skill, allSkills);
 
   if (verbose) {
     process.stderr.write(`\n  Compliance system prompt:\n  ---\n${complianceSystemPrompt}\n  ---\n`);
     if (toolNames.length > 0) {
       process.stderr.write(`  Mock tools provided: ${toolNames.join(', ')}\n`);
+    }
+    if (crossRefs.length > 0) {
+      process.stderr.write(`  Cross-skill references detected: ${crossRefs.map(s => s.name).join(', ')}\n`);
     }
     process.stderr.write('\n');
   }
@@ -227,7 +240,7 @@ export async function evaluateResults(
           process.stderr.write(`    Judging compliance...`);
           const judgeText = await generateWithRetry(judgeModels, {
             system: COMPLIANCE_JUDGE_SYSTEM,
-            prompt: complianceJudgePrompt(skill, result.prompt.text, fullResponse),
+            prompt: complianceJudgePrompt(skill, result.prompt.text, fullResponse, crossRefs),
             temperature: 0.1,
           });
           compliance = safeParseComplianceEval(judgeText);
