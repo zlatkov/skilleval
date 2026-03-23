@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { join } from 'node:path';
-import { parseSkill } from '../src/parser.js';
+import { parseSkill, resolveSkillSources } from '../src/parser.js';
 
 const fixturesDir = join(import.meta.dirname, 'fixtures');
 
@@ -30,5 +30,25 @@ describe('parseSkill', () => {
 
   it('throws on non-existent file', async () => {
     await expect(parseSkill(join(fixturesDir, 'nope.md'))).rejects.toThrow();
+  });
+});
+
+describe('resolveSkillSources', () => {
+  it('returns single file path unchanged', async () => {
+    const src = join(fixturesDir, 'test-skill.md');
+    expect(await resolveSkillSources(src)).toEqual([src]);
+  });
+
+  it('discovers all SKILL.md files recursively in a directory', async () => {
+    const skillsDir = join(fixturesDir, 'skills');
+    const sources = await resolveSkillSources(skillsDir);
+    expect(sources).toHaveLength(2);
+    expect(sources.every(s => s.endsWith('SKILL.md'))).toBe(true);
+    expect(sources.some(s => s.includes('skill-a'))).toBe(true);
+    expect(sources.some(s => s.includes('skill-b'))).toBe(true);
+  });
+
+  it('throws when directory has no SKILL.md files', async () => {
+    await expect(resolveSkillSources(join(fixturesDir, 'empty-dir'))).rejects.toThrow('No SKILL.md');
   });
 });

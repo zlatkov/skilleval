@@ -84,16 +84,16 @@ program
         internalApiKey = '';
       }
 
-      // Expand any directory sources to individual SKILL.md paths
-      const expandedSources = (await Promise.all(skillSources.map(resolveSkillSources))).flat();
+      // Expand sources — directories and GitHub repos/folders become multiple SKILL.md paths
+      // Pass skillName only when a single source is given with --skill (named lookup)
+      const skillName: string | undefined = skillSources.length === 1 ? opts.skill : undefined;
+      const expandedSources = (await Promise.all(skillSources.map(src => resolveSkillSources(src, skillName)))).flat();
       // Deduplicate while preserving order
       const uniqueSources = [...new Set(expandedSources)];
 
       // Parse all skills
       process.stderr.write(chalk.cyan('Parsing skills...\n'));
-      const skills = await Promise.all(
-        uniqueSources.map(src => parseSkill(src, uniqueSources.length === 1 ? opts.skill : undefined)),
-      );
+      const skills = await Promise.all(uniqueSources.map(src => parseSkill(src)));
 
       if (!opts.json) {
         console.log(`\n${chalk.bold('skilleval')} v0.1.0`);
