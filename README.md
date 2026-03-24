@@ -4,7 +4,7 @@ Evaluate how well AI models understand and respond to [Agent Skills](https://age
 
 Skill authors write a SKILL.md and have zero idea whether it works on any model besides the one they tested with. `skilleval` fixes that  - it simulates how agents like [OpenClaw](https://openclaw.ai/) and Claude Code inject skills into prompts, following the [OpenSkills](https://github.com/numman-ali/openskills) specification, then tests whether various LLM models correctly trigger and follow the skill's instructions.
 
-### `skilleval ./SKILL.md` — evaluate a skill across multiple models
+### `skilleval ./SKILL.md` - evaluate a skill across multiple models
 
 ```
 skilleval v0.1.0
@@ -27,7 +27,7 @@ Best model: qwen/qwen3-235b-a22b:free (98%)
 Worst model: mistralai/mistral-small-3.1-24b:free (66%)
 ```
 
-### `skilleval ./skills/ --graph` — visualise dependencies between skills
+### `skilleval ./skills/ --graph` - visualise dependencies between skills
 
 ```
 Skill Dependency Graph
