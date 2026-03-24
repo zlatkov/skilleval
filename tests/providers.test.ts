@@ -36,5 +36,8 @@ describe('resolveApiKey', () => {
 
     process.env.GOOGLE_GENERATIVE_AI_API_KEY = 'google-key';
     expect(resolveApiKey('google')).toBe('google-key');
+
+    process.env.AZURE_API_KEY = 'azure-key';
+    expect(resolveApiKey('azure')).toBe('azure-key');
   });
 });

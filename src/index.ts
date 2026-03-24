@@ -86,7 +86,7 @@ program
   .description('Evaluate how well AI models understand Agent Skills (SKILL.md files)')
   .version('0.1.0')
   .argument('<skill>', 'Path, URL, or GitHub shorthand to a SKILL.md file or a folder containing SKILL.md files')
-  .option('-p, --provider <provider>', 'Provider: openrouter, anthropic, openai, google', 'openrouter')
+  .option('-p, --provider <provider>', 'Provider: openrouter, anthropic, openai, google, azure', 'openrouter')
   .option('-m, --models <models>', 'Comma-separated model IDs to test')
   .option('-k, --key <key>', 'API key (or use provider-specific env var)')
   .option('--generator-model <model>', 'Model for test prompt generation (comma-separated for fallbacks)')

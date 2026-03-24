@@ -94,7 +94,7 @@ npm run build    # TypeScript → dist/
 ## Tech Stack
 
 - TypeScript (ESM)
-- Vercel AI SDK (`ai`, `@ai-sdk/openai`, `@ai-sdk/anthropic`, `@ai-sdk/google`)
+- Vercel AI SDK (`ai`, `@ai-sdk/openai`, `@ai-sdk/anthropic`, `@ai-sdk/google`, `@ai-sdk/azure`)
 - Commander.js (CLI)
 - gray-matter (SKILL.md frontmatter parsing)
 - chalk (terminal colors)

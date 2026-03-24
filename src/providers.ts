@@ -1,6 +1,7 @@
 import { createOpenAI } from '@ai-sdk/openai';
 import { createAnthropic } from '@ai-sdk/anthropic';
 import { createGoogleGenerativeAI } from '@ai-sdk/google';
+import { createAzure } from '@ai-sdk/azure';
 import type { LanguageModel } from 'ai';
 import { type ProviderName, PROVIDER_ENV_VARS } from './config.js';
 
@@ -36,5 +37,13 @@ export function createModel(provider: ProviderName, modelId: string, apiKey: str
 
     case 'google':
       return createGoogleGenerativeAI({ apiKey })(modelId);
+
+    case 'azure': {
+      const resourceName = process.env.AZURE_RESOURCE_NAME;
+      if (!resourceName) {
+        throw new Error('AZURE_RESOURCE_NAME environment variable is required for the azure provider.');
+      }
+      return createAzure({ resourceName, apiKey })(modelId);
+    }
   }
 }

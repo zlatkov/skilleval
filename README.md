@@ -192,7 +192,7 @@ Arguments:
                                  to batch-evaluate all SKILL.md files inside.
 
 Options:
-  -p, --provider <provider>      Provider: openrouter, anthropic, openai, google (default: openrouter)
+  -p, --provider <provider>      Provider: openrouter, anthropic, openai, google, azure (default: openrouter)
   -m, --models <models>          Comma-separated model IDs
   -s, --skill <name>             Skill name within the repo (looks for skills/<name>/SKILL.md)
   -k, --key <key>                API key (or use provider-specific env var)
@@ -229,6 +229,7 @@ All providers use the [Vercel AI SDK](https://ai-sdk.dev) under the hood.
 | Anthropic | `--provider anthropic` | `ANTHROPIC_API_KEY` | Direct API access to Claude models. |
 | OpenAI | `--provider openai` | `OPENAI_API_KEY` | Direct API access to GPT models. |
 | Google | `--provider google` | `GOOGLE_GENERATIVE_AI_API_KEY` | Direct API access to Gemini models. |
+| Azure | `--provider azure` | `AZURE_API_KEY` + `AZURE_RESOURCE_NAME` | Azure AI Foundry. Model IDs are deployment names. |
 
 ### Examples
 
@@ -241,6 +242,9 @@ npx skilleval ./SKILL.md --models "anthropic/claude-sonnet-4-20250514,openai/gpt
 
 # Test directly against Anthropic
 npx skilleval ./SKILL.md --provider anthropic --model claude-sonnet-4-20250514
+
+# Test against Azure AI Foundry (model ID = your deployment name)
+npx skilleval ./SKILL.md --provider azure --models my-gpt4-deployment
 
 # Use a smarter judge model
 npx skilleval ./SKILL.md --judge-model "qwen/qwen3-235b-a22b:free"

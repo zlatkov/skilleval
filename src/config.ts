@@ -2,7 +2,7 @@ import type { LanguageModel } from 'ai';
 
 // --- Provider Types ---
 
-export const PROVIDER_NAMES = ['openrouter', 'anthropic', 'openai', 'google'] as const;
+export const PROVIDER_NAMES = ['openrouter', 'anthropic', 'openai', 'google', 'azure'] as const;
 export type ProviderName = (typeof PROVIDER_NAMES)[number];
 
 export const PROVIDER_ENV_VARS: Record<ProviderName, string> = {
@@ -10,6 +10,7 @@ export const PROVIDER_ENV_VARS: Record<ProviderName, string> = {
   anthropic: 'ANTHROPIC_API_KEY',
   openai: 'OPENAI_API_KEY',
   google: 'GOOGLE_GENERATIVE_AI_API_KEY',
+  azure: 'AZURE_API_KEY',
 };
 
 // --- Skill Types ---
