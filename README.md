@@ -4,6 +4,59 @@ Evaluate how well AI models understand and respond to [Agent Skills](https://age
 
 Skill authors write a SKILL.md and have zero idea whether it works on any model besides the one they tested with. `skilleval` fixes that  - it simulates how agents like [OpenClaw](https://openclaw.ai/) and Claude Code inject skills into prompts, following the [OpenSkills](https://github.com/numman-ali/openskills) specification, then tests whether various LLM models correctly trigger and follow the skill's instructions.
 
+### Evaluate a single skill across multiple models
+
+```
+skilleval v0.1.0
+Skill: pdf-processing
+Description: Extract text and tables from PDF files
+Provider: openrouter
+Models: 5
+
+┌───────────────────────────────────────────┬──────────────┬────────────────┬─────────┐
+│ Model                                     │ Trigger      │ Compliance     │ Overall │
+├───────────────────────────────────────────┼──────────────┼────────────────┼─────────┤
+│ qwen/qwen3-235b-a22b:free                 │ 10/10        │ 5/5 (92)       │ 98%     │
+│ meta-llama/llama-3.3-70b-instruct:free    │ 9/10         │ 4/5 (85)       │ 82%     │
+│ deepseek/deepseek-r1:free                 │ 9/10         │ 4/5 (80)       │ 81%     │
+│ google/gemma-3-27b-it:free                │ 8/10         │ 3/5 (70)       │ 72%     │
+│ mistralai/mistral-small-3.1-24b:free      │ 7/10         │ 3/5 (65)       │ 66%     │
+└───────────────────────────────────────────┴──────────────┴────────────────┴─────────┘
+
+Best model: qwen/qwen3-235b-a22b:free (98%)
+Worst model: mistralai/mistral-small-3.1-24b:free (66%)
+```
+
+### Visualise dependencies between skills
+
+```
+Skill Dependency Graph
+════════════════════════════════════════
+
+  ◉ orchestrator
+    ├──▶ fetcher (name: "fetcher")
+    ├──▶ parser (name: "parser")
+    └──▶ formatter (name: "formatter")
+  ◉ fetcher
+    ├──▶ parser (name: "parser")
+    └──▶ formatter (name: "formatter")
+  ◉ parser (depended on by 3)
+  ◉ formatter
+    └──▶ parser (name: "parser")
+
+────────────────────────────────────────
+  Nodes: 4 skills
+  Edges: 6 dependencies
+
+  Adjacency Matrix:
+                    1   2   3   4
+  1. orchestrator   ·   ●   ●   ●
+  2. fetcher        ·   ·   ●   ●
+  3. parser         ·   ·   ·   ·
+  4. formatter      ·   ·   ●   ·
+  ● = depends on
+```
+
 ## Prerequisites
 
 You need an [OpenRouter](https://openrouter.ai) account. Create a free API key at [openrouter.ai/keys](https://openrouter.ai/keys).
@@ -63,29 +116,6 @@ npx skilleval https://github.com/user/repo/tree/main/skills
 
 See [AGENTS.md](./AGENTS.md) for detailed pipeline internals.
 
-## Output
-
-```
-skilleval v0.1.0
-Skill: pdf-processing
-Description: Extract text and tables from PDF files
-Provider: openrouter
-Models: 5
-
-┌───────────────────────────────────────────┬──────────────┬────────────────┬─────────┐
-│ Model                                     │ Trigger      │ Compliance     │ Overall │
-├───────────────────────────────────────────┼──────────────┼────────────────┼─────────┤
-│ qwen/qwen3-235b-a22b:free                 │ 10/10        │ 5/5 (92)       │ 98%     │
-│ meta-llama/llama-3.3-70b-instruct:free    │ 9/10         │ 4/5 (85)       │ 82%     │
-│ deepseek/deepseek-r1:free                 │ 9/10         │ 4/5 (80)       │ 81%     │
-│ google/gemma-3-27b-it:free                │ 8/10         │ 3/5 (70)       │ 72%     │
-│ mistralai/mistral-small-3.1-24b:free      │ 7/10         │ 3/5 (65)       │ 66%     │
-└───────────────────────────────────────────┴──────────────┴────────────────┴─────────┘
-
-Best model: qwen/qwen3-235b-a22b:free (98%)
-Worst model: mistralai/mistral-small-3.1-24b:free (66%)
-```
-
 ### Batch Mode
 
 When you point `skilleval` at a folder instead of a single file, it automatically discovers all SKILL.md files recursively and evaluates each one. The other skills found in the folder are injected as real distractors alongside the standard dummy skills, making the trigger test harder and more realistic.
@@ -140,41 +170,11 @@ Directories like `node_modules`, `.git`, and `dist` are automatically skipped du
 
 ### Dependency Graph
 
-Use `--graph` to visualise how skills reference each other. This works with any folder or repository source and requires no API key.
+Use `--graph` to visualise how skills reference each other. This works with any folder or repository source and requires no API key. References are detected by scanning each skill's content for mentions of other skill names, path references (e.g. `skills/other-skill/`), and frontmatter dependency fields (e.g. `dependencies: [other-skill]`).
 
 ```bash
 npx skilleval ./skills/ --graph
 npx skilleval https://github.com/user/repo/tree/main/skills --graph
-```
-
-`skilleval` detects references by scanning each skill's content for mentions of other skill names, path references (e.g. `skills/other-skill/`), and frontmatter dependency fields (e.g. `dependencies: [other-skill]`).
-
-```
-Skill Dependency Graph
-════════════════════════════════════════
-
-  ◉ orchestrator
-    ├──▶ fetcher (name: "fetcher")
-    ├──▶ parser (name: "parser")
-    └──▶ formatter (name: "formatter")
-  ◉ fetcher
-    ├──▶ parser (name: "parser")
-    └──▶ formatter (name: "formatter")
-  ◉ parser (depended on by 3)
-  ◉ formatter
-    └──▶ parser (name: "parser")
-
-────────────────────────────────────────
-  Nodes: 4 skills
-  Edges: 6 dependencies
-
-  Adjacency Matrix:
-                    1   2   3   4
-  1. orchestrator   ·   ●   ●   ●
-  2. fetcher        ·   ·   ●   ●
-  3. parser         ·   ·   ·   ·
-  4. formatter      ·   ·   ●   ·
-  ● = depends on
 ```
 
 The graph also detects and warns about circular dependencies. When running in batch evaluation mode (without `--graph`), the dependency graph is automatically shown if any dependencies are found between the scanned skills.
