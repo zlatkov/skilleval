@@ -138,6 +138,49 @@ Supported folder sources:
 
 Directories like `node_modules`, `.git`, and `dist` are automatically skipped during local scans.
 
+### Dependency Graph
+
+Use `--graph` to visualise how skills reference each other. This works with any folder or repository source and requires no API key.
+
+```bash
+npx skilleval ./skills/ --graph
+npx skilleval https://github.com/user/repo/tree/main/skills --graph
+```
+
+`skilleval` detects references by scanning each skill's content for mentions of other skill names, path references (e.g. `skills/other-skill/`), and frontmatter dependency fields (e.g. `dependencies: [other-skill]`).
+
+```
+Skill Dependency Graph
+════════════════════════════════════════
+
+  ◉ orchestrator
+    ├──▶ fetcher (name: "fetcher")
+    ├──▶ parser (name: "parser")
+    └──▶ formatter (name: "formatter")
+  ◉ fetcher
+    ├──▶ parser (name: "parser")
+    └──▶ formatter (name: "formatter")
+  ◉ parser (depended on by 3)
+  ◉ formatter
+    └──▶ parser (name: "parser")
+
+────────────────────────────────────────
+  Nodes: 4 skills
+  Edges: 6 dependencies
+
+  Adjacency Matrix:
+                    1   2   3   4
+  1. orchestrator   ·   ●   ●   ●
+  2. fetcher        ·   ·   ●   ●
+  3. parser         ·   ·   ·   ·
+  4. formatter      ·   ·   ●   ·
+  ● = depends on
+```
+
+The graph also detects and warns about circular dependencies. When running in batch evaluation mode (without `--graph`), the dependency graph is automatically shown if any dependencies are found between the scanned skills.
+
+Use `--graph --json` for machine-readable output.
+
 ## Usage
 
 ```
@@ -155,6 +198,7 @@ Options:
   -k, --key <key>                API key (or use provider-specific env var)
   --generator-model <model>      Model for test prompt generation (comma-separated for fallbacks)
   --judge-model <model>          Model for evaluation judging (comma-separated for fallbacks)
+  --graph                        Show dependency graph between skills (folder/repo mode only)
   --json                         Output results as JSON
   --verbose                      Show detailed per-prompt results
   -n, --count <number>           Number of positive+negative test prompts (default: 5, so 5+5=10 total)
@@ -221,6 +265,10 @@ npx skilleval https://github.com/user/repo/tree/main/skills
 
 # Batch-evaluate an entire GitHub repo for SKILL.md files
 npx skilleval user/repo
+
+# Visualise the dependency graph between skills (no API key needed)
+npx skilleval ./skills/ --graph
+npx skilleval https://github.com/user/repo/tree/main/skills --graph --json
 
 # Full example: evaluate Vercel's most popular skill on skills.sh
 npx skilleval https://github.com/vercel-labs/skills --skill find-skills \

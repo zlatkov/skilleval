@@ -124,6 +124,19 @@ export interface ScanOptions {
   promptsPath?: string;
 }
 
+// --- Dependency Graph Types ---
+
+export interface SkillEdge {
+  from: string;
+  to: string;
+  mentions: string[];
+}
+
+export interface SkillGraph {
+  nodes: string[];
+  edges: SkillEdge[];
+}
+
 // --- Model holder for passing around ---
 
 export interface ModelWithId {

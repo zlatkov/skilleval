@@ -10,6 +10,7 @@ import { generateTestPrompts } from './test-generator.js';
 import { runTests } from './runner.js';
 import { evaluateResults, computeReport } from './evaluator.js';
 import { printReport, printBatchReport } from './reporter.js';
+import { buildDependencyGraph, renderGraph } from './graph.js';
 import {
   DEFAULT_FREE_MODELS,
   DEFAULT_GENERATOR_MODELS,
@@ -95,8 +96,32 @@ program
   .option('--prompts <path>', 'Path to JSON file with custom test prompts')
   .option('-s, --skill <name>', 'Skill name within the repo (looks for skills/<name>/SKILL.md)')
   .option('-n, --count <number>', 'Number of positive+negative test prompts (default: 5+5)', '5')
+  .option('--graph', 'Show dependency graph between skills (folder/repo mode only)', false)
   .action(async (skillSource: string, opts) => {
     try {
+      // Detect if source is a directory (local or GitHub tree)
+      const isDir = await isDirectorySource(skillSource);
+
+      // --graph mode: only needs skill discovery, no API keys or models
+      if (opts.graph) {
+        if (!isDir) {
+          console.error(chalk.red('The --graph flag requires a folder or repository, not a single skill file.'));
+          process.exit(1);
+        }
+
+        process.stderr.write(chalk.cyan('Scanning for SKILL.md files...\n'));
+        const scanResult = await scanForSkills(skillSource);
+
+        if (scanResult.skills.length === 0) {
+          console.error(chalk.red(`No SKILL.md files found in "${skillSource}".`));
+          process.exit(1);
+        }
+
+        const graph = buildDependencyGraph(scanResult.skills);
+        renderGraph(graph, { json: opts.json });
+        process.exit(0);
+      }
+
       const provider = opts.provider as ProviderName;
       if (!PROVIDER_NAMES.includes(provider)) {
         console.error(chalk.red(`Invalid provider "${provider}". Must be one of: ${PROVIDER_NAMES.join(', ')}`));
@@ -167,9 +192,6 @@ program
         prompts: opts.prompts,
       };
 
-      // Detect if source is a directory (local or GitHub tree)
-      const isDir = await isDirectorySource(skillSource);
-
       if (isDir) {
         // --- Batch mode: scan folder for all SKILL.md files ---
         process.stderr.write(chalk.cyan('Scanning for SKILL.md files...\n'));
@@ -199,6 +221,12 @@ program
           }
           console.log(`${chalk.bold('Provider:')} ${provider}`);
           console.log(`${chalk.bold('Models:')} ${modelIds.length}\n`);
+        }
+
+        // Show dependency graph in batch mode
+        const graph = buildDependencyGraph(scanResult.skills);
+        if (graph.edges.length > 0 && !opts.json) {
+          renderGraph(graph, { json: false });
         }
 
         // Run evaluation for each skill, using other found skills as distractors
