@@ -85,7 +85,7 @@ async function runSingleSkill(
 program
   .name('skilleval')
   .description('Evaluate how well AI models understand Agent Skills (SKILL.md files)')
-  .version('0.1.0')
+  .version('0.2.0')
   .argument('<skill>', 'Path, URL, or GitHub shorthand to a SKILL.md file or a folder containing SKILL.md files')
   .option('-p, --provider <provider>', 'Provider: openrouter, anthropic, openai, google, azure', 'openrouter')
   .option('-m, --models <models>', 'Comma-separated model IDs to test')
@@ -232,7 +232,7 @@ program
         }
 
         if (!opts.json) {
-          console.log(`\n${chalk.bold('skilleval')} v0.1.0 ${chalk.dim('(batch mode)')}`);
+          console.log(`\n${chalk.bold('skilleval')} v0.2.0 ${chalk.dim('(batch mode)')}`);
           console.log(`${chalk.bold('Skills found:')} ${scanResult.skills.length}`);
           for (const skill of scanResult.skills) {
             console.log(`  ${chalk.cyan('•')} ${skill.name} — ${chalk.dim(skill.description.slice(0, 80))}`);
@@ -281,7 +281,7 @@ program
         const skill = await parseSkill(skillSource, opts.skill);
 
         if (!opts.json) {
-          console.log(`\n${chalk.bold('skilleval')} v0.1.0`);
+          console.log(`\n${chalk.bold('skilleval')} v0.2.0`);
           console.log(`${chalk.bold('Skill:')} ${skill.name}`);
           console.log(`${chalk.bold('Description:')} ${skill.description}`);
           console.log(`${chalk.bold('Provider:')} ${provider}`);

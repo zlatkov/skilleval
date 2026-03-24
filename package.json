@@ -1,6 +1,6 @@
 {
   "name": "@alexanderzzlatkov/skilleval",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "Evaluate how well AI models understand Agent Skills (SKILL.md files)",
   "keywords": [
     "ai",
